@@ -1,5 +1,6 @@
 {
     "name": "ActGuard Docs",
+    "theme": "mint",
     "logo": {
       "light": "/assets/actguard-logo.png",
       "dark": "/assets/actguard-logo.png"
