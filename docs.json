@@ -1,0 +1,21 @@
+{
+    "name": "ActGuard Docs",
+    "logo": {
+      "light": "/assets/actguard-logo.png",
+      "dark": "/assets/actguard-logo.png"
+    },
+    "navigation": [
+      {
+        "group": "Getting Started",
+        "pages": ["index", "getting-started"]
+      },
+      {
+        "group": "Concepts",
+        "pages": ["concepts"]
+      },
+      {
+        "group": "API",
+        "pages": ["api-reference"]
+      }
+    ]
+  }
