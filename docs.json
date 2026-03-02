@@ -12,43 +12,38 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "ActGuard",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["index"]
+          }
+        ]
+      },
+      {
+        "tab": "Python SDK",
         "groups": [
           {
             "group": "Getting Started",
-            "pages": [
-              "index",
-              "python-sdk/index",
-              "python-sdk/getting-started"
-            ]
+            "pages": ["python-sdk/index", "python-sdk/getting-started"]
           },
           {
             "group": "Concepts",
-            "pages": [
-              "python-sdk/concepts"
-            ]
+            "pages": ["python-sdk/concepts"]
           },
           {
             "group": "API",
-            "pages": [
-              "python-sdk/api-reference",
-              "python-sdk/tool-guards"
-            ]
-          }
-        ],
-        "tab": "Docs"
-      },
-      {
-        "groups": [
+            "pages": ["python-sdk/api-reference", "python-sdk/tool-guards"]
+          },
           {
-            "group": "Providers",
+            "group": "Integrations",
             "pages": [
               "python-sdk/integrations/openai",
               "python-sdk/integrations/anthropic",
               "python-sdk/integrations/google"
             ]
           }
-        ],
-        "tab": "Integrations"
+        ]
       }
     ]
   },

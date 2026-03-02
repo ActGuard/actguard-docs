@@ -2,8 +2,6 @@
 title: "Python SDK Overview"
 ---
 
-# Overview
-
 **actguard** is a lightweight Python SDK that enforces token and cost budgets across LLM API calls without changing your existing client code.
 
 It works by patching the official OpenAI, Anthropic, and Google Generative AI SDKs at the transport layer. Wrap any block of code in a `BudgetGuard` context manager and actguard transparently counts tokens and USD spend in real time, raising `BudgetExceededError` the moment a limit is hit.
