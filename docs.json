@@ -17,23 +17,38 @@
             "group": "Getting Started",
             "pages": [
               "index",
-              "getting-started"
+              "python-sdk/index",
+              "python-sdk/getting-started"
             ]
           },
           {
             "group": "Concepts",
             "pages": [
-              "concepts"
+              "python-sdk/concepts"
             ]
           },
           {
             "group": "API",
             "pages": [
-              "api-reference"
+              "python-sdk/api-reference",
+              "python-sdk/tool-guards"
             ]
           }
         ],
         "tab": "Docs"
+      },
+      {
+        "groups": [
+          {
+            "group": "Providers",
+            "pages": [
+              "python-sdk/integrations/openai",
+              "python-sdk/integrations/anthropic",
+              "python-sdk/integrations/google"
+            ]
+          }
+        ],
+        "tab": "Integrations"
       }
     ]
   },
