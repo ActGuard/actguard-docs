@@ -1,9 +1,13 @@
+---
+title: "Getting Started"
+---
+
 # Getting Started
 
 ## Requirements
 
 - Python 3.9+
-- At least one supported LLM SDK installed (see [Integrations](./integrations/openai.md))
+- At least one supported LLM SDK installed (see [Integrations](/python-sdk/integrations/openai))
 
 ## Install actguard
 
@@ -279,7 +283,7 @@ with RunContext():
 
 ## What's next
 
-- [Core Concepts](./concepts.md) - understand how limits and isolation work
-- [Tool Guards](./tool-guards.md) - tool decorator behavior and framework integrations
-- [Integrations](./integrations/openai.md) - provider-specific requirements
-- [API Reference](./api-reference.md) - full parameter and exception reference
+- [Core Concepts](/python-sdk/concepts) - understand how limits and isolation work
+- [Tool Guards](/python-sdk/tool-guards) - tool decorator behavior and framework integrations
+- [Integrations](/python-sdk/integrations/openai) - provider-specific requirements
+- [API Reference](/python-sdk/api-reference) - full parameter and exception reference

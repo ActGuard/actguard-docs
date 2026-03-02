@@ -1,3 +1,7 @@
+---
+title: "Core Concepts"
+---
+
 # Core Concepts
 
 ## BudgetGuard
@@ -142,7 +146,7 @@ with actguard.session("req-123", {"user_id": "u1"}):
 
 The patch is **transparent**: if no `BudgetGuard` is active in the current context, patched methods behave exactly like the originals.
 
-See the [Integrations](./integrations/openai.md) section for provider-specific details and version requirements.
+See the [Integrations](/python-sdk/integrations/openai) section for provider-specific details and version requirements.
 
 ---
 
@@ -163,4 +167,4 @@ except BudgetExceededError as e:
     print(e.usd_limit)
 ```
 
-Full attribute reference: [API Reference → BudgetExceededError](./api-reference.md#budgetexceedederror).
+Full attribute reference: [API Reference → BudgetExceededError](/python-sdk/api-reference#budgetexceedederror).

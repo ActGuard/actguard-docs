@@ -1,3 +1,7 @@
+---
+title: "ActGuard"
+---
+
 # ActGuard
 
 ActGuard is a runtime governance layer for AI agents.

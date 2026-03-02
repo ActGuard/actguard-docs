@@ -1,4 +1,0 @@
-interface:
-  display_name: "Push Main Branch"
-  short_description: "Prepare, verify, and push commits to main safely"
-  default_prompt: "Use $push-main-branch to validate changes, commit cleanly, and push to main."

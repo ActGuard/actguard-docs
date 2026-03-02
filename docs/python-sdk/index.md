@@ -1,3 +1,7 @@
+---
+title: "Python SDK Overview"
+---
+
 # Overview
 
 **actguard** is a lightweight Python SDK that enforces token and cost budgets across LLM API calls without changing your existing client code.
@@ -59,8 +63,8 @@ each patched call:
 
 ## Next steps
 
-- [Getting Started](./getting-started.md) - installation options and first examples
-- [Core Concepts](./concepts.md) - limits, context isolation, streaming, and tool runtime context
-- [Tool Guards](./tool-guards.md) - rate limiting, circuit breaker, max attempts, timeout, idempotency, chain-of-custody, and framework integrations
-- [Integrations](./integrations/openai.md) - provider-specific notes and requirements
-- [API Reference](./api-reference.md) - full API and exception reference
+- [Getting Started](/python-sdk/getting-started) - installation options and first examples
+- [Core Concepts](/python-sdk/concepts) - limits, context isolation, streaming, and tool runtime context
+- [Tool Guards](/python-sdk/tool-guards) - rate limiting, circuit breaker, max attempts, timeout, idempotency, chain-of-custody, and framework integrations
+- [Integrations](/python-sdk/integrations/openai) - provider-specific notes and requirements
+- [API Reference](/python-sdk/api-reference) - full API and exception reference

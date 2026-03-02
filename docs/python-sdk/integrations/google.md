@@ -1,3 +1,7 @@
+---
+title: "Google Generative AI Integration"
+---
+
 # Google Generative AI Integration
 
 actguard patches `google.generativeai.GenerativeModel.generate_content` and its async counterpart.

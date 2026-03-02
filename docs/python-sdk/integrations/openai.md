@@ -1,3 +1,7 @@
+---
+title: "OpenAI Integration"
+---
+
 # OpenAI Integration
 
 actguard patches `openai.SyncAPIClient.request` and `openai.AsyncAPIClient.request` — private transport-layer methods that every high-level OpenAI API call passes through.

@@ -1,3 +1,7 @@
+---
+title: "Anthropic Integration"
+---
+
 # Anthropic Integration
 
 actguard patches `anthropic.resources.messages.Messages.create` and its async counterpart, intercepting every call to the Messages API.
