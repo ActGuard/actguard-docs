@@ -1,22 +1,41 @@
 {
-    "name": "ActGuard Docs",
-    "theme": "mint",
-    "logo": {
-      "light": "/assets/actguard-logo.png",
-      "dark": "/assets/actguard-logo.png"
-    },
-    "navigation": [
+  "colors": {
+    "dark": "#00d3b4",
+    "light": "#00d3b4",
+    "primary": "#00d3b4"
+  },
+  "logo": {
+    "dark": "/assets/actguard-logo.png",
+    "light": "/assets/actguard-logo.png"
+  },
+  "name": "ActGuard Docs",
+  "navigation": {
+    "tabs": [
       {
-        "group": "Getting Started",
-        "pages": ["index", "getting-started"]
-      },
-      {
-        "group": "Concepts",
-        "pages": ["concepts"]
-      },
-      {
-        "group": "API",
-        "pages": ["api-reference"]
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "getting-started"
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts"
+            ]
+          },
+          {
+            "group": "API",
+            "pages": [
+              "api-reference"
+            ]
+          }
+        ],
+        "tab": "Docs"
       }
     ]
-  }
+  },
+  "theme": "mint"
+}
