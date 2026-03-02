@@ -1,66 +1,137 @@
-# Overview
+# ActGuard
 
-**actguard** is a lightweight Python SDK that enforces token and cost budgets across LLM API calls without changing your existing client code.
+ActGuard is a runtime governance layer for AI agents.
 
-It works by patching the official OpenAI, Anthropic, and Google Generative AI SDKs at the transport layer. Wrap any block of code in a `BudgetGuard` context manager and actguard transparently counts tokens and USD spend in real time, raising `BudgetExceededError` the moment a limit is hit.
+It provides enforceable budgets, tool safeguards, and verifiable execution controls for production LLM systems — without requiring changes to how models are called.
 
-## Installation
+Instead of trusting agents to behave, ActGuard makes behavior measurable, enforceable, and auditable.
 
-```bash
-pip install actguard
+---
+
+## Why ActGuard Exists
+
+LLM agents in production fail in predictable ways:
+
+- Silent cost overruns  
+- Endless retry loops  
+- Hallucinated identifiers  
+- Cross-step data corruption  
+- Tool misuse  
+- Missing workflow prerequisites  
+- Prompt injection side effects  
+
+Traditional guardrails focus on prompt shaping.  
+ActGuard focuses on **runtime enforcement**.
+
+---
+
+## What ActGuard Does
+
+ActGuard wraps LLM execution and tool calls with hard constraints.
+
+### 1. Budget Enforcement
+
+Set limits on:
+
+- Token usage  
+- USD cost  
+- Model consumption per run  
+- Per-tenant or per-agent limits  
+
+Supports:
+
+- OpenAI  
+- Anthropic  
+- Google  
+- Streaming responses  
+- Async execution  
+
+No code changes to model calls — patch once within a guard context.
+
+---
+
+### 2. Tool Guards
+
+Decorators for safe tool execution:
+
+- `rate_limit`
+- `max_attempts`
+- `timeout`
+- `circuit_breaker`
+- `idempotent`
+
+Prevents retry storms, duplicate side effects, and runaway loops.
+
+---
+
+### 3. Proof & Enforcement Layer
+
+Optional custody verification:
+
+- Ensure identifiers were actually fetched  
+- Ensure required steps occurred before side effects  
+- Prevent cross-step corruption  
+- Block destructive calls not backed by evidence  
+
+This moves agents from “best effort” to **provable correctness constraints**.
+
+---
+
+### 4. Gateway Integration
+
+ActGuard can emit runtime events to a central platform:
+
+- Token usage  
+- Tool invocation metadata  
+- Guard decisions  
+- Enforcement blocks  
+
+Designed for:
+
+- Multi-tenant SaaS  
+- Agent marketplaces  
+- Enterprise AI governance  
+
+---
+
+## Architecture
+
+At runtime:
+```
+LLM → Agent → Tool Calls
+↓
+ActGuard
+↓
+Enforce / Block / Record
 ```
 
-## Quickstart
+Events can optionally stream to:
 
-```python
-from actguard import BudgetGuard
-import openai
+- Pub/Sub  
+- BigQuery  
+- Observability pipelines  
+- Central governance dashboards  
 
-client = openai.OpenAI()
+---
 
-with BudgetGuard(user_id="alice", token_limit=1_000) as guard:
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "Hello!"}],
-    )
+## Who It’s For
 
-print(f"Used ${guard.usd_used:.4f} of ${guard.usd_limit:.2f}")
-```
+- Teams deploying LLM agents in production  
+- Companies with cost exposure to LLM APIs  
+- Multi-tenant AI platforms  
+- Builders who need runtime safety — not just prompt safety  
 
-No configuration file, no proxy, no side-car process. Budget state lives in a Python [`ContextVar`](https://docs.python.org/3/library/contextvars.html), so it is isolated per async task and per thread.
+---
 
-## Key features
+## Philosophy
 
-- **Token and USD limits**: set one, the other, or both.
-- **Zero code changes to LLM calls**: patch is applied once when entering the `with` block.
-- **Streaming support**: usage is captured from final stream chunks; stream contents are untouched.
-- **Async support**: `BudgetGuard` is both a sync and async context manager.
-- **Multi-provider**: OpenAI, Anthropic, Google Generative AI out of the box.
-- **Context-var isolation**: nested or concurrent guards do not interfere.
-- **Tool guards**: `rate_limit`, `circuit_breaker`, `max_attempts`, `timeout`, `idempotent`, plus `prove`/`enforce` chain-of-custody decorators.
-- **Gateway-ready**: optionally report tool checks to the ActGuard platform.
+LLMs are probabilistic.
 
-## How it works
+Production systems cannot be.
 
-```
-your code
-  └── BudgetGuard.__enter__()
-        ├── patches SyncAPIClient.request  (OpenAI)
-        ├── patches Messages.create        (Anthropic)
-        └── patches GenerativeModel.generate_content  (Google)
+ActGuard turns agent execution into something:
 
-each patched call:
-  1. pre-check: raise BudgetExceededError if already over limit
-  2. forward to original SDK method
-  3. read usage from response / stream
-  4. accumulate tokens_used + usd_used on the BudgetState ContextVar
-  5. post-check: raise BudgetExceededError if now over limit
-```
-
-## Next steps
-
-- [Getting Started](./getting-started.md) - installation options and first examples
-- [Core Concepts](./concepts.md) - limits, context isolation, streaming, and tool runtime context
-- [Tool Guards](./tool-guards.md) - rate limiting, circuit breaker, max attempts, timeout, idempotency, chain-of-custody, and framework integrations
-- [Integrations](./integrations/openai.md) - provider-specific notes and requirements
-- [API Reference](./api-reference.md) - full API and exception reference
+- Bounded  
+- Observable  
+- Enforceable  
+- Economically measurable  
