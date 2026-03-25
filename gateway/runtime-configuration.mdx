@@ -1,0 +1,90 @@
+---
+title: "Runtime configuration"
+description: "Gateway environment variables and management-plane feature toggles."
+---
+
+## Required for startup
+
+- `DATABASE_URL`
+- `MAILIO_CRED_MASTER_KEY_B64`
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+
+If any required value is missing, gateway startup exits.
+
+## Core networking and host behavior
+
+- `PORT` (default bind `:8085`)
+- `BASE_DOMAIN` (default `actguard.localhost`)
+- `COOKIE_DOMAIN` (default `actguard.localhost`)
+- `CORS_ALLOWED_ORIGINS` (comma-separated; when unset, defaults to `https://BASE_DOMAIN`, `https://www.BASE_DOMAIN`)
+
+## Redis
+
+- `REDIS_URL` (default `redis://localhost:6379/0`)
+- `REDIS_PASSWORD` (optional)
+- `REDIS_POOL_SIZE` (default `10`)
+
+Redis is opened and pinged at startup.
+
+## Auth and tenant creation
+
+- `GITHUB_REDIRECT_URL` (default `https://BASE_DOMAIN/api/v1/auth/callback/github`)
+- `RESERVED_TENANT_SLUGS` (comma-separated extra reserved slugs)
+
+Built-in reserved slugs are:
+`w`, `www`, `app`, `api`, `connect`, `admin`, `static`, `auth`, `login`, `logout`, `signup`, `signin`, `actguard`, `docs`, `dashboard`, `billing`, `settings`, `support`, `help`, `status`, `cdn`, `assets`, `mail`, `smtp`, `imap`, `pop`, `oauth`, `sso`, `account`, `accounts`, `dev`, `staging`, `prod`, `test`.
+
+## Connect feature toggle
+
+Connect routes are enabled only when all are set:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `CONNECT_STATE_SIGNING_KEY`
+
+Related options:
+
+- `GOOGLE_REDIRECT_URL` (default `https://BASE_DOMAIN/api/v1/connect/google/callback`)
+- `CONNECT_BASE_URL` (default `https://BASE_DOMAIN`)
+
+## Dashboard feature toggle
+
+Dashboard endpoints are enabled only when `BQ_PROJECT_ID` is set.
+
+Optional dashboard settings:
+
+- `BQ_DATASET` (default `actguard_events`)
+- `BQ_TABLE` (default `events_v1`)
+- `GCP_LOCATION` (default `US`)
+
+## Pub/Sub event ingest toggle
+
+`POST /api/v1/events` is enabled only when `PUBSUB_PROJECT_ID` is set.
+
+Optional:
+
+- `PUBSUB_TOPIC_EVENTS` (default `events-v1`)
+
+## Budget runtime background workers
+
+- `REAPER_INTERVAL_SECONDS` (default `60`)
+- `BUDGET_SNAPSHOT_FLUSH_INTERVAL_SECONDS` (default `10`)
+- `BUDGET_SNAPSHOT_LEASE_TTL_SECONDS` (default `30`)
+- `BUDGET_SNAPSHOT_BATCH_SIZE` (default `200`)
+
+## Alerting worker controls
+
+- `ALERT_EVALUATOR_ENABLED` (default `true`)
+- `ALERT_DISPATCHER_ENABLED` (default `true`)
+- `ALERT_EVALUATOR_POLL_INTERVAL_SECONDS` (default `60`)
+- `ALERT_DISPATCHER_POLL_INTERVAL_SECONDS` (default `5`)
+- `ALERT_DISPATCHER_BATCH_SIZE` (default `25`)
+- `ALERT_DISPATCHER_WORKER_ID` (optional)
+- `ALERT_DELIVERY_TIMEOUT_SECONDS` (default `10`)
+
+## Workspace key authentication behavior
+
+- `ARGON2_PEPPER` (optional; used when hashing workspace key secrets)
+- Successful workspace key auth updates `last_used_at` asynchronously
+- Redis throttling key: `workspace_last_used:<key_id>` with fixed 60 second TTL

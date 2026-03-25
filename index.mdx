@@ -2,68 +2,49 @@
 title: "ActGuard"
 ---
 
-Add **budgets**, **execution controls**, and **workflow verification** — without changing how your models are called.
+## The control plane for AI agents
 
-## What you can do
+Ship autonomous agents, without losing control.
 
-**Set clear limits.**  
-Control token usage, USD spend, and model consumption per agent or tenant.
+ActGuard adds **runtime governance** to agent systems. 
+It sits between your agents and the APIs or tools they call, enforcing budgets, guardrails, and execution policies in real time.
 
-**Let agents use real tools.**  
-Connect to Google Workspace, Notion, Stripe, and internal APIs — more integrations coming soon.
+You integrate it directly in your agent code and manage policies from a central gateway.
 
-**Run tools safely.**  
-Apply rate limits, retries, timeouts, and idempotency automatically.
+**Framework-agnostic. Model-agnostic. Vendor-neutral.**
 
-**Require verification before action.**  
-Ensure identifiers were fetched and required steps occurred before side effects.
+## What you can do with ActGuard 
 
-**Stay observable.**  
-Emit runtime events for cost, tool usage, and enforcement decisions.
+- Enforce **token and spending budgets** per workspace, agent or plan  
+- Add **guardrails around tool usage**
+- Send **alerts to Slack or webhooks** when policies are triggered 
+- Inspect **blocked runs and intervention events**
 
----
+### Dashboard overview
 
-Wrap your agent once.  
-Enforce everywhere.
+Monitor agent runs and tool calls in real time
+- See token usage and spending across agents and workspaces
+- Inspect blocked executions when a policy is triggered
+- Configure budgets, guardrails, and alert channels
+- Review intervention events such as budget limits or policy violations
 
-Start building.
+Instead of discovering problems after costs spike or tools are abused, ActGuard surfaces them **while the agent is executing**. 
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+<img src="/assets/dashboard_screenshot_1.png" alt="Dashboard" width="100%" />
 
-<Columns cols={2}>
+<Columns cols={2} spacing="2rem">
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Agent Management"
+    icon="server"
+    href="/gateway/index"
   >
-    Edit your docs locally and preview them in real time.
+    Configure budgets and alerts, manage workspace keys, and inspect spend and guard interventions.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Python SDK"
+    icon="square-code"
+    href="/python-sdk/index"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+    Start with `budget_guard`, then layer tool decorators. TypeScript support is coming soon.
   </Card>
 </Columns>

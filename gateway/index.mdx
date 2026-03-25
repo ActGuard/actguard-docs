@@ -1,0 +1,44 @@
+---
+title: "Agent Management"
+description: "How to use the ActGuard management plane for budgets, alerts, spend drilldowns, and workspace controls."
+---
+
+The gateway management plane is session-authenticated (`gw_session`) and focused on operating agent workloads across a workspace.
+
+## What you can do
+
+- Set daily budgets at three levels: workspace, agent, and plan (`plan_key`, such as `pro`)
+- Configure custom alert channels (`slack` and `webhook`) and attach them to alert rules
+- Drill down on dashboard spend by agent and inspect blocked execution details
+- Drill down on guard interventions (`guard-blocked`) and budget interventions (`budget-blocked`)
+- Manage workspace management keys (`ws_live_...`) for operational workflows
+
+## Auth models (current)
+
+- **Session auth** (`gw_session` cookie): required for management endpoints in this section
+- **Workspace key auth middleware** (`WorkspaceAPIKeyAuth` with `Authorization: Bearer ws_live_...`): implemented but not currently mounted to HTTP management routes in `routes.go`
+
+When a workspace key is authenticated through middleware, context claims include:
+
+- `kind=workspace_key`
+- `workspace_id`
+- `role` (`read_only`, `developer`, `admin`)
+- `key_id`, `key_name`, and key record ID
+
+## Tenant scoping behavior
+
+Management routes are path-scoped under `/w/{slug}`.
+
+- Tenant identity is resolved from `{slug}` in the URL
+- Authorization then resolves tenant membership from session + slug
+- Unauthorized requests return `401`; insufficient membership returns `403`
+
+## API surface in this docs section
+
+- [HTTP API](/gateway/http-api)
+- [Events and observability](/gateway/events)
+- [Runtime configuration](/gateway/runtime-configuration)
+
+## Out of scope here
+
+Agent API key endpoints are intentionally not documented in this section.

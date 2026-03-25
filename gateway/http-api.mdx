@@ -1,0 +1,354 @@
+---
+title: "HTTP API"
+description: "Gateway management endpoints for budgets, alerts, dashboard drilldowns, and workspace keys."
+---
+
+This page documents management-plane HTTP endpoints that use session auth. It excludes agent API key endpoints.
+
+`WorkspaceAPIKeyAuth` middleware exists for `ws_live_...` keys, but it is not mounted to these management routes in the current router.
+
+## Dashboard drilldowns
+
+Path prefix: `/api/v1/dashboard`.
+
+Endpoints:
+
+- `GET /overview`
+- `GET /spend`
+- `GET /spend/series`
+- `GET /top-agents`
+- `GET /top-agents/details`
+- `GET /budget-blocked`
+- `GET /budget-blocked/details`
+- `GET /guard-blocked`
+- `GET /guard-blocked/details`
+
+Auth/runtime behavior:
+
+- Requires `gw_session`
+- Tenant is resolved from `/w/{slug}`
+- Returns `401` when unauthenticated, `403` when tenant access is denied
+
+Query parameters:
+
+- `range` (optional, default `current_month`)
+- Allowed values: `15s`, `30s`, `1min`, `5min`, `10min`, `15min`, `30min`, `45min`, `today`, `yesterday`, `1m`, `3m`, `current_month`
+- `timezone` (optional, IANA timezone string)
+
+Unknown `range` values currently fall back to `current_month`.
+
+Detail endpoint requirements:
+
+- `top-agents/details`: requires `agent_id`
+- `budget-blocked/details`: requires `run_id` or `event_id`
+- `guard-blocked/details`: requires `run_id` or `event_id`
+
+Example (`GET /api/v1/dashboard/spend?range=current_month`):
+
+```json
+{
+  "window": {
+    "kind": "current_month",
+    "start": "2026-03-01T00:00:00Z",
+    "end": "2026-03-13T14:51:22Z"
+  },
+  "metrics": {
+    "total_micros": 3400000,
+    "unique_settlements": 42,
+    "avg_micros_per_settlement": 80952.38,
+    "budget_used_pct": 34.0
+  }
+}
+```
+
+## Budgets (workspace, agent, plan)
+
+Path prefix: `/api/v1/workspaces/{tenant_id}/budgets`.
+
+Auth/runtime behavior:
+
+- Requires `gw_session`
+- Requires owner access for `{tenant_id}`
+- Returns `401` for unauthenticated, `403` for non-owner/non-member
+
+### Workspace budget
+
+- `GET /workspace`
+- `PUT /workspace`
+
+`PUT` request:
+
+```json
+{"daily_budget_usd_micros": 10000000}
+```
+
+Response shape:
+
+```json
+{
+  "tenant_id": "...",
+  "daily_budget_usd_micros": 10000000
+}
+```
+
+`daily_budget_usd_micros` may be `null` (unset). Negative values return `400`.
+
+### Agent budgets
+
+- `GET /agents`
+- `PUT /agents/{agent_id}`
+
+`PUT` request:
+
+```json
+{"daily_budget_usd_micros": 2500000}
+```
+
+`PUT` response:
+
+```json
+{
+  "agent_id": "agent_123",
+  "daily_budget_usd_micros": 2500000
+}
+```
+
+`PUT /agents/{agent_id}` returns `404` when the agent does not exist in that tenant.
+
+### Plan budgets
+
+- `GET /plans`
+- `POST /plans`
+- `PUT /plans/{plan_key}`
+- `DELETE /plans/{plan_key}` (returns `204`)
+
+`POST /plans` request:
+
+```json
+{
+  "plan_key": "pro",
+  "display_name": "Pro",
+  "description": "Higher daily limit",
+  "daily_budget_usd_micros": 20000000
+}
+```
+
+`plan_key` must match `^[a-z0-9][a-z0-9_-]*$`.
+
+`PUT /plans/{plan_key}` supports partial updates:
+
+- `display_name`
+- `description`
+- `daily_budget_usd_micros`
+- `is_active`
+
+Plan responses include:
+
+```json
+{
+  "id": "...",
+  "tenant_id": "...",
+  "plan_key": "pro",
+  "display_name": "Pro",
+  "description": "Higher daily limit",
+  "daily_budget_usd_micros": 20000000,
+  "is_active": true,
+  "created_at": "2026-03-10T12:00:00Z",
+  "updated_at": "2026-03-10T12:00:00Z"
+}
+```
+
+## Alerts (rules, channels, history)
+
+Path prefix: `/api/v1/alerts`.
+
+Auth/runtime behavior:
+
+- Requires `gw_session`
+- Requires admin-or-higher tenant membership
+- Tenant is resolved from `/w/{slug}` before membership checks
+
+### System status
+
+- `GET /system`
+
+Current wire keys are Go struct keys (no JSON tags), for example:
+
+```json
+{
+  "EvaluatorEnabled": true,
+  "DispatcherEnabled": true,
+  "QueueSize": 0,
+  "LastEvaluationTime": "2026-03-13T14:50:00Z",
+  "LastDispatchTime": "2026-03-13T14:50:02Z",
+  "EnabledRules": 4,
+  "ConfiguredChannels": 2
+}
+```
+
+### Rules
+
+- `POST /rules`
+- `GET /rules`
+- `GET /rules/{rule_id}`
+- `PATCH /rules/{rule_id}`
+- `DELETE /rules/{rule_id}` (`204`)
+
+Rule fields:
+
+- `severity`: `info | low | medium | high | critical`
+- `scope_type`: `tenant | workspace | agent`
+- `rule_kind`: `event_count_gte | first_occurrence`
+- `rule_config.window_seconds`: required, `> 0`
+- `rule_config.threshold`: required for `event_count_gte` (`> 0`), omitted or `0` for `first_occurrence`
+- `cooldown_seconds`: `>= 0`
+- `channel_config_ids`: optional channel references
+
+`POST /rules` example:
+
+```json
+{
+  "name": "Budget blocked spike",
+  "description": "High volume of blocked budget events",
+  "enabled": true,
+  "severity": "high",
+  "scope_type": "workspace",
+  "scope_id": "tenant_123",
+  "rule_kind": "event_count_gte",
+  "rule_config": {
+    "window_seconds": 300,
+    "threshold": 5,
+    "filters": {
+      "event_types": ["budget.blocked"]
+    }
+  },
+  "cooldown_seconds": 600,
+  "channel_config_ids": ["channel_1"]
+}
+```
+
+### Channels
+
+- `POST /channels`
+- `GET /channels`
+- `GET /channels/{channel_id}`
+- `PATCH /channels/{channel_id}`
+- `DELETE /channels/{channel_id}` (`204`)
+- `POST /channels/{channel_id}/test`
+
+Supported `channel_type` values:
+
+- `slack` with config `{ "webhook_url": "https://..." }`
+- `webhook` with config `{ "url": "https://...", "signing_secret": "optional" }`
+
+`POST /channels` example:
+
+```json
+{
+  "channel_type": "slack",
+  "enabled": true,
+  "config": {
+    "webhook_url": "https://hooks.slack.com/services/..."
+  }
+}
+```
+
+`POST /channels/{channel_id}/test` returns `200` for successful test sends. Current wire keys are:
+
+```json
+{
+  "ResponseStatus": 200,
+  "ResponseSnippet": "ok"
+}
+```
+
+### Alert history
+
+- `GET /`
+- `GET /{alert_id}`
+
+List query parameters:
+
+- `limit` (default `50`)
+- `offset` (default `0`)
+- `rule_id`
+- `severity`
+- `status`
+- `from` (RFC3339)
+- `to` (RFC3339)
+
+List response:
+
+```json
+{
+  "items": [],
+  "total": 0,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+## Workspace management keys
+
+Path prefix: `/api/v1/management/workspace-keys`.
+
+Auth/runtime behavior:
+
+- Requires `gw_session`
+- Owner access required
+- Tenant is resolved from `/w/{slug}`
+
+### `GET /`
+
+```json
+{
+  "items": [
+    {
+      "id": "wk_123",
+      "name": "ci-key",
+      "role": "developer",
+      "created_at": "2026-03-10T12:00:00Z",
+      "last_used_at": "2026-03-10T15:00:00Z",
+      "revoked_at": null
+    }
+  ]
+}
+```
+
+### `POST /`
+
+Request:
+
+```json
+{"name":"ci-key","role":"developer"}
+```
+
+Success (`201`) returns the key record and `api_key` once:
+
+```json
+{
+  "id": "wk_123",
+  "name": "ci-key",
+  "role": "developer",
+  "created_at": "2026-03-10T12:00:00Z",
+  "api_key": "ws_live_<key_id>.<secret>"
+}
+```
+
+Valid `role` values: `read_only`, `developer`, `admin`.
+
+### `POST /{id}:revoke`
+
+```json
+{"ok":true}
+```
+
+## Disabled endpoint
+
+### `POST /api/v1/execute`
+
+Always returns `410 Gone`:
+
+```json
+{"error":"execute endpoint is disabled"}
+```

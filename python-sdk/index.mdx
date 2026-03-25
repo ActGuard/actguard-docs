@@ -2,67 +2,57 @@
 title: "Python SDK Overview"
 ---
 
-**actguard** is a lightweight Python SDK that enforces token and cost budgets across LLM API calls without changing your existing client code.
+The ActGuard Python SDK gives you a runtime client that manages:
 
-It works by patching the official OpenAI, Anthropic, and Google Generative AI SDKs at the transport layer. Wrap any block of code in a `BudgetGuard` context manager and actguard transparently counts tokens and USD spend in real time, raising `BudgetExceededError` the moment a limit is hit.
+- Run-scoped execution context (`client.run(...)`)
+- Budget reserve/settle scopes (`client.budget_guard(...)`)
+- Tool guard decorators (`rate_limit`, `circuit_breaker`, `max_attempts`, `timeout`, `idempotent`, `prove`, `enforce`, `tool`)
+- Optional event shipping to the ActGuard gateway
 
-## Installation
+## Install
 
 ```bash
 pip install actguard
 ```
 
-## Quickstart
+## Canonical runtime pattern
 
 ```python
-from actguard import BudgetGuard
-import openai
+import actguard
 
-client = openai.OpenAI()
+client = actguard.Client.from_env()
 
-with BudgetGuard(user_id="alice", token_limit=1_000) as guard:
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": "Hello!"}],
-    )
+with client.run(user_id="alice", run_id="req-123"):
+    with client.budget_guard(usd_limit=0.05) as guard:
+        # your agent + tool execution
+        ...
 
-print(f"Used ${guard.usd_used:.4f} of ${guard.usd_limit:.2f}")
+print(guard.tokens_used, guard.usd_used)
 ```
 
-No configuration file, no proxy, no side-car process. Budget state lives in a Python [`ContextVar`](https://docs.python.org/3/library/contextvars.html), so it is isolated per async task and per thread.
+This is the same pattern used by the framework demos in `actguard/examples`.
 
-## Key features
+## Initialization options
 
-- **Token and USD limits**: set one, the other, or both.
-- **Zero code changes to LLM calls**: patch is applied once when entering the `with` block.
-- **Streaming support**: usage is captured from final stream chunks; stream contents are untouched.
-- **Async support**: `BudgetGuard` is both a sync and async context manager.
-- **Multi-provider**: OpenAI, Anthropic, Google Generative AI out of the box.
-- **Context-var isolation**: nested or concurrent guards do not interfere.
-- **Tool guards**: `rate_limit`, `circuit_breaker`, `max_attempts`, `timeout`, `idempotent`, plus `prove`/`enforce` chain-of-custody decorators.
-- **Gateway-ready**: optionally report tool checks to the ActGuard platform.
+- `actguard.Client.from_env()` reads `ACTGUARD_CONFIG` when set
+- `actguard.Client.from_file("./actguard.json")` reads JSON config from disk
+- `actguard.Client(...)` accepts explicit constructor args
 
-## How it works
+`ACTGUARD_CONFIG` may be either:
 
-```
-your code
-  └── BudgetGuard.__enter__()
-        ├── patches SyncAPIClient.request  (OpenAI)
-        ├── patches Messages.create        (Anthropic)
-        └── patches GenerativeModel.generate_content  (Google)
+- A base64-encoded JSON object
+- A filesystem path to a JSON file
 
-each patched call:
-  1. pre-check: raise BudgetExceededError if already over limit
-  2. forward to original SDK method
-  3. read usage from response / stream
-  4. accumulate tokens_used + usd_used on the BudgetState ContextVar
-  5. post-check: raise BudgetExceededError if now over limit
-```
+## Runtime scopes at a glance
+
+- `client.run(...)`: required for runtime-scoped decorators like `max_attempts` and `idempotent`
+- `client.budget_guard(...)`: budget tracking/enforcement scope bound to the active run
+- `actguard.session(...)`: chain-of-custody scope used by `prove` and `enforce`
 
 ## Next steps
 
-- [Getting Started](/python-sdk/getting-started) - installation options and first examples
-- [Core Concepts](/python-sdk/concepts) - limits, context isolation, streaming, and tool runtime context
-- [Tool Guards](/python-sdk/tool-guards) - rate limiting, circuit breaker, max attempts, timeout, idempotency, chain-of-custody, and framework integrations
-- [Integrations](/python-sdk/integrations/openai) - provider-specific notes and requirements
-- [API Reference](/python-sdk/api-reference) - full API and exception reference
+- [Getting started](/python-sdk/getting-started)
+- [Core concepts](/python-sdk/concepts)
+- [Tool guards](/python-sdk/tool-guards)
+- [API reference](/python-sdk/api-reference)
+- [OpenAI integration](/python-sdk/integrations/openai)

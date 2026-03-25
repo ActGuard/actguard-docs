@@ -1,0 +1,49 @@
+---
+title: "Events and observability"
+description: "Management-plane observability and event behavior for budgets, alerts, dashboard drilldowns, and workspace keys."
+---
+
+## Scope
+
+This page documents management-plane observability behavior.
+
+Runtime ingest (`POST /api/v1/events`) and reserve/settle API usage are runtime surfaces, not management endpoints.
+
+## Management service signals
+
+The management plane emits structured logs for key operations:
+
+- Workspace keys:
+- `workspace_key.created`
+- `workspace_key.revoked`
+
+- Budgets:
+- `budgets.workspace.set`
+- `budgets.agent.set`
+- `budgets.plan.created`
+- `budgets.plan.updated`
+- `budgets.plan.disabled`
+
+Common fields include `tenant_id` or `workspace_id`, plus operation-specific identifiers (`plan_key`, `agent_id`, `key_id`).
+
+## Dashboard drilldowns
+
+Dashboard drilldowns (`/api/v1/dashboard/*`) read analytics-backed aggregates and event timelines for:
+
+- spend by agent
+- budget-blocked events
+- guard-blocked events
+
+The dashboard API itself is read-only and does not emit new domain envelopes.
+
+## Alerts observability behavior
+
+Alerting management endpoints configure rules/channels and query history. Delivery attempts and outcomes are tracked in alert history payloads:
+
+- alert status (`pending`, `sending`, `sent`, `failed`, `suppressed`)
+- delivery attempt status (`pending`, `processing`, `sent`, `failed`, `retry_scheduled`)
+- per-attempt response/error snippets where available
+
+## Workspace key runtime note
+
+`WorkspaceAPIKeyAuth` updates key `last_used_at` asynchronously after successful authentication, throttled to once per `key_id` per 60 seconds when Redis throttling is active.

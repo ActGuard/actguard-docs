@@ -17,6 +17,20 @@
           {
             "group": "Overview",
             "pages": ["index"]
+          },
+          {
+            "group": "Budgets",
+            "pages": [
+              "budgets/index"
+            ] 
+          },
+          {
+            "group": "Agents reference",
+            "pages": [
+              "gateway/http-api",
+              "gateway/events",
+              "gateway/runtime-configuration"
+            ]
           }
         ]
       },
